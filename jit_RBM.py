@@ -2,6 +2,7 @@ import numpy as np
 import numba
 import matplotlib.pyplot as plt
 
+# calculates the joint distribution by summing all configurations
 def calc_joint_distribution(w, b, N_visible, N_hidden, spin=False):
     vs = np.zeros((2**N_visible, N_visible))
     p_joint = np.zeros((2**N_visible, 2**N_hidden))
@@ -14,6 +15,7 @@ def calc_joint_distribution(w, b, N_visible, N_hidden, spin=False):
             p_joint[ai, bi] = np.exp(-energy(vs[ai, :], hs[bi, :], w, a, b))  
     return p_joint/p_joint.sum()
 
+# calculate the visible distribution
 @numba.jit
 def calc_pvis_ana(w, b, vis_states, spin=False):
     N_vis = vis_states.shape[1]
@@ -29,20 +31,6 @@ def calc_pvis_ana(w, b, vis_states, spin=False):
         pvis *= B[:,i]
     return pvis/pvis.sum()
 
-@numba.jit
-def calc_pvis_ana_cosh(w, b, vis_states):
-    N_vis = vis_states.shape[1]
-    pvis = np.zeros(vis_states.shape[0])
-    wres = w[:N_vis, N_vis:]
-    vb = b[:N_vis]
-    hb = b[N_vis:]
-    N_hid = hb.shape[0]
-    C = np.exp(np.dot(vis_states, vb))
-    B = 2*np.cosh(np.dot(vis_states, wres) + hb)
-    pvis = C
-    for i in range(N_hid):
-        pvis *= B[:,i]
-    return pvis/pvis.sum()
 
 def plot_distr(distribution1, distribution2, N, distribution3=None, label1="RBM", label2="SNN", label3="target"):
     labels = np.arange(2**N)
